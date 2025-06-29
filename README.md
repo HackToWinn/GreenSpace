@@ -11,9 +11,9 @@ Welcome to **GreenSpace**, an innovative digital platform that empowers communit
 
 ## 🔗 Production Links
 
-* **🌐 Landing Page**: [**Visit Our GreenSpace Landing Page**](https://greenspace.hacktowin.com)
+* **🌐 Landing Page**: [**Visit Our GreenSpace Landing Page**](https://greenspace.hacktowin.systems/)
 * **📱 Download APK**: [**Download GreenSpace Application**](https://expo.dev/artifacts/eas/nvq4YYjVSVinucW1F5bVxt.apk)
-* **⚙️ API Endpoint**: `https://api.hacktowin.com`
+* **⚙️ API Endpoint**: `https://api.hacktowin.systems`
 
 
 ## 🛠️ Technology Stack
