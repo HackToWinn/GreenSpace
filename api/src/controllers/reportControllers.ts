@@ -149,6 +149,9 @@ export const processImage = async (req: Request, res: Response) => {
         { role: 'user', content: PromptRoleUser }
       ],
       temperature: 0.7,
+      "response_format": {
+        "type": "json_object"
+      },
       max_completion_tokens: 1000,
       stream: false,
       top_p: 0.9,
@@ -156,6 +159,8 @@ export const processImage = async (req: Request, res: Response) => {
 
     // Parse analysis result
     let analysisResult = analysis.choices[0].message.content;
+    console.log('Analysis Result:', analysisResult);
+    console.log(analysis.choices[0].message.content);
     let parsedAnalysis = {};
     try { parsedAnalysis = JSON.parse(analysisResult || '{}'); }
     catch (e) { /* fallback to empty obj */ }
@@ -178,7 +183,7 @@ export const processImage = async (req: Request, res: Response) => {
     // Save report
     await Actor.addReport(repId, {
       id: repId,
-      user: Principal.fromText('3gzjj-udemb-yhgo6-dyii6-sxlue-eo237-2egks-yvafd-vxnrx-swnwn-5qe') as any, // the process at the motoko canister automatically get the user from the identity
+      user: Principal.fromText('3gzjj-udemb-yhgo6-dyii6-sxlue-eo237-2egks-yvafd-vxnrx-swnwn-5qe') as any, 
       category,
       description,
       location,

@@ -1,117 +1,122 @@
 import Types "../types";
 import Time "mo:base/Time";
+import Nat "mo:base/Nat";
+import Text "mo:base/Text";
 import Buffer "mo:base/Buffer";
 import BTree "mo:stableheapbtreemap/BTree";
-import Nat "mo:base/Nat";
-import Int "mo:base/Int";
+import HashMap "mo:base/HashMap";
 
-module {
-  // Function to get daily trends
-  public func getDailyTrends(trends : BTree.BTree<Text, Types.TrendData>) : async [Types.TrendData] {
-    // Get the current time in nanoseconds
+module Trend {
+
+  /**
+  * Processes a BTree of reports into daily, weekly, and monthly trend data.
+  */
+  public func getTrends(reports : BTree.BTree<Text, Types.Report>) : Types.AllTrends {
     let currentTime = Time.now();
 
-    // 1 day in nanoseconds
-    let oneDayInNanos = 24 * 60 * 60 * 1_000_000_000;
+    let oneDayInNanos : Nat = 24 * 60 * 60 * 1_000_000_000;
+    let oneWeekInNanos : Nat = 7 * oneDayInNanos;
+    let oneMonthInNanos : Nat = 30 * oneDayInNanos;
 
-    // Calculate the start time for today (timestamp 24 hours ago)
-    let dayStartTime = currentTime - oneDayInNanos;
+    let dailyBoundary = currentTime - oneDayInNanos;
+    let weeklyBoundary = currentTime - oneWeekInNanos;
+    let monthlyBoundary = currentTime - oneMonthInNanos;
 
-    // Array to store trends from today
-    let dailyTrends = Buffer.Buffer<Types.TrendData>(0);
+    let dailyTrends = Buffer.Buffer<Types.ChartPoint>(0);
+    let weeklyTrends = Buffer.Buffer<Types.ChartPoint>(0);
+    let monthlyTrends = Buffer.Buffer<Types.ChartPoint>(0);
 
-    // Iterate through the trends and filter by timestamp
-    for ((_, trend) in BTree.entries(trends)) {
-      if (trend.timestamp >= dayStartTime) {
-        dailyTrends.add(trend);
+    var i : Nat = 0;
+    for ((_, report) in BTree.entries(reports)) {
+      let value = switch (Nat.fromText(report.presentage_confidence)) {
+        case (?n) { n };
+        case (null) { 0 };
       };
+
+      let point : Types.ChartPoint = {
+        name = "P" # Nat.toText(i);
+        value = value;
+      };
+      i += 1;
+
+      if (report.timestamp >= dailyBoundary) { dailyTrends.add(point) };
+      if (report.timestamp >= weeklyBoundary) { weeklyTrends.add(point) };
+      if (report.timestamp >= monthlyBoundary) { monthlyTrends.add(point) };
     };
 
-    return Buffer.toArray(dailyTrends);
+    return {
+      daily = Buffer.toArray(dailyTrends);
+      weekly = Buffer.toArray(weeklyTrends);
+      monthly = Buffer.toArray(monthlyTrends);
+    };
   };
 
-  // Function to get weekly trends
-  public func getWeeklyTrends(trends : BTree.BTree<Text, Types.TrendData>) : async [Types.TrendData] {
-    // Get the current time in nanoseconds
-    let currentTime = Time.now();
+  /**
+  * Aggregates reports by category to produce summary statistics.
+  */
+  public func getCategoryStatistics(reports : BTree.BTree<Text, Types.Report>) : [Types.CategoryStats] {
+    let categoryMap = HashMap.HashMap<Text, Buffer.Buffer<Nat>>(0, Text.equal, Text.hash);
 
-    // 1 week in nanoseconds
-    let oneWeekInNanos = 7 * 24 * 60 * 60 * 1_000_000_000;
+    for ((_, report) in BTree.entries(reports)) {
+      let value = switch (Nat.fromText(report.presentage_confidence)) {
+        case (?n) { n };
+        case (null) { 0 };
+      };
 
-    // Calculate the start time for this week (timestamp 7 days ago)
-    let weekStartTime = currentTime - oneWeekInNanos;
-
-    // Array to store trends from this week
-    let weeklyTrends = Buffer.Buffer<Types.TrendData>(0);
-
-    // Iterate through the trends and filter by timestamp
-    for ((_, trend) in BTree.entries(trends)) {
-      if (trend.timestamp >= weekStartTime) {
-        weeklyTrends.add(trend);
+      switch (categoryMap.get(report.category)) {
+        case (null) {
+          let newBuffer = Buffer.Buffer<Nat>(1);
+          newBuffer.add(value);
+          categoryMap.put(report.category, newBuffer);
+        };
+        case (?existingBuffer) {
+          existingBuffer.add(value);
+        };
       };
     };
 
-    return Buffer.toArray(weeklyTrends);
-  };
-  // Function to get monthly trends
-  public func getMonthlyTrends(trends : BTree.BTree<Text, Types.TrendData>) : async [Types.TrendData] {
-    // Get the current time in nanoseconds
-    let currentTime = Time.now();
+    let result = Buffer.Buffer<Types.CategoryStats>(0);
+    for ((category, valuesBuffer) in categoryMap.entries()) {
+      let values = Buffer.toArray(valuesBuffer);
+      if (values.size() > 0) {
+        var totalValue : Nat = 0;
+        for (v in values.vals()) {
+          totalValue += v;
+        };
 
-    // 1 month in nanoseconds (approx. 30 days)
-    let oneMonthInNanos = 30 * 24 * 60 * 60 * 1_000_000_000;
+        let chartData = Buffer.Buffer<Types.ChartPoint>(0);
+        let startIdx = if (values.size() > 5) { values.size() - 5 } else { 0 };
+        let endIdx = values.size();
 
-    // Calculate the start time for this month (timestamp 30 days ago)
-    let monthStartTime = currentTime - oneMonthInNanos;
+        var i = startIdx;
+        while (i < endIdx) {
+          chartData.add({
+            name = "P" # Nat.toText(i);
+            value = values[i];
+          });
+          i += 1;
+        };
 
-    // Array to store trends from this month
-    let monthlyTrends = Buffer.Buffer<Types.TrendData>(0);
+        var changes : Text = "+0";
+        if (values.size() > 1) {
+          let last = values[values.size() - 1];
+          let secondLast = values[values.size() - 2];
+          if (last >= secondLast) {
+            changes := "+" # Nat.toText(last - secondLast);
+          } else {
+            changes := "-" # Nat.toText(secondLast - last);
+          };
+        };
 
-    // Iterate through the trends and filter by timestamp
-    for ((_, trend) in BTree.entries(trends)) {
-      if (trend.timestamp >= monthStartTime) {
-        monthlyTrends.add(trend);
+        result.add({
+          title = category;
+          value = totalValue;
+          chartData = Buffer.toArray(chartData);
+          changes = changes;
+        });
       };
     };
 
-    return Buffer.toArray(monthlyTrends);
-  };
-
-  // Function to get trends by category
-  public func getTrendsByCategory(trends : BTree.BTree<Text, Types.TrendData>, category : Text) : async [Types.TrendData] {
-    // Array to store trends for the specified category
-    let categoryTrends = Buffer.Buffer<Types.TrendData>(0);
-
-    // Iterate through the trends and filter by category
-    for ((_, trend) in BTree.entries(trends)) {
-      if (trend.category == category) {
-        categoryTrends.add(trend);
-      };
-    };
-
-    return Buffer.toArray(categoryTrends);
-  };
-  // Function to get category statistics by year
-  public func getCategoryByYear(category : BTree.BTree<Text, Types.TrendData>, year : Int) : async [Types.TrendData] {
-    // Get the current time in nanoseconds
-    let currentTime = Time.now();
-
-    // Calculate start and end timestamps for the specified year (Unix epoch in nanoseconds)
-    // Jan 1st of the year at 00:00:00 UTC, in nanoseconds
-    let yearStartTime = (year - 1970) * 365 * 24 * 60 * 60 * 1_000_000_000;
-    // Jan 1st of the next year
-    let yearEndTime = (year - 1969) * 365 * 24 * 60 * 60 * 1_000_000_000;
-
-    // Array to store trends for the specified year
-    let yearlyTrends = Buffer.Buffer<Types.TrendData>(0);
-
-    // Iterate through the trends and filter by timestamp
-    for ((_, trend) in BTree.entries(category)) {
-      if (trend.timestamp >= yearStartTime and trend.timestamp < yearEndTime) {
-        yearlyTrends.add(trend);
-      };
-    };
-
-    return Buffer.toArray(yearlyTrends);
+    Buffer.toArray(result);
   };
 };

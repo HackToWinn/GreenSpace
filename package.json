@@ -1,5 +1,6 @@
 {
   "name": "greenspace-project",
+  "private": true,
   "workspaces": [
     "api",
     "landing_page",
@@ -9,11 +10,16 @@
     "build": "npm run build --workspaces --if-present",
     "prebuild": "npm run prebuild --workspaces --if-present",
     "dev": "npm run dev --workspaces --if-present",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
+    "eslint": "^9.0.0",
     "prettier": "^3.5.3",
-    "prettier-plugin-motoko": "^0.11.0"
+    "prettier-plugin-motoko": "^0.11.0",
+    "typescript": "~5.8.3"
+  },
+  "overrides": {
+    "@types/react": "~18.2.0"
   }
 }

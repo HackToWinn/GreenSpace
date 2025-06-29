@@ -43,4 +43,22 @@ module {
     category : Text;
   };
 
+  public type ChartPoint = {
+    name : Text;
+    value : Nat;
+  };
+
+  public type AllTrends = {
+    daily : [ChartPoint];
+    weekly : [ChartPoint];
+    monthly : [ChartPoint];
+  };
+
+  public type CategoryStats = {
+    title : Text;
+    value : Nat; // Total value for the category
+    chartData : [ChartPoint]; // Data for the category's mini-chart
+    changes : Text; // A string representing change, e.g., "+5" or "-2"
+  };
+
 };

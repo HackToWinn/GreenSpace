@@ -13,7 +13,6 @@ import {
 } from '../declarations/gsp_ledger';
 import { Principal } from '@dfinity/principal';
 import { Identity } from '@dfinity/agent';
-import { AccountIdentifier } from '@dfinity/ledger-icp';
 
 
 export async function useBackend(

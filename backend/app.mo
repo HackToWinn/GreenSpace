@@ -14,7 +14,6 @@ actor {
 
   var users = BTree.init<Principal, Types.User>(?24);
   var reports = BTree.init<Text, Types.Report>(?24);
-  var trends = BTree.init<Text, Types.TrendData>(?24);
 
   public shared (msg) func addReport(id : Text, report : Types.Report) : async () {
     return await Report.addReport(id, report, reports, msg.caller);
@@ -51,6 +50,9 @@ actor {
   ) : async { success : Bool; error : ?Text } {
     return await User.addUser(users, msg.caller, { email = email; username = username; pictureCid = pictureCid });
   };
+  public shared (msg) func whoami() : async Principal {
+    return msg.caller;
+  };
 
   public shared (msg) func getMyProfile() : async ?Types.User {
     return await User.getMyProfile(users, msg.caller);
@@ -74,20 +76,12 @@ actor {
     );
   };
 
-  public func getDailyTrends() : async [Types.TrendData] {
-    return await Trends.getDailyTrends(reports);
+  public query func getTrends() : async Types.AllTrends {
+    return Trends.getTrends(reports);
   };
-  
-  public func getWeeklyTrends() : async [Types.TrendData] {
-    return await Trends.getWeeklyTrends(reports);
+
+  public query func getCategoryStatistics() : async [Types.CategoryStats] {
+    return Trends.getCategoryStatistics(reports);
   };
-  public func getMonthlyTrends() : async [Types.TrendData] {
-    return await Trends.getMonthlyTrends(reports);
-  };
-  public func getTrendsByCategory(category : Text) : async [Types.TrendData] {
-    return await Trends.getTrendsByCategory(reports, category);
-  };
-  public func getCategoryByYear(year : Int) : async [Types.TrendData] {
-    return await Trends.getCategoryByYear(reports, year);
-  };
+
 };
