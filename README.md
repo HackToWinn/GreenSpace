@@ -9,6 +9,13 @@ Welcome to **GreenSpace**, an innovative digital platform that empowers communit
 * **Decentralized Ecosystem**: Built on the *Internet Computer Protocol* (ICP), all reports and transactions are recorded transparently and securely on the blockchain.
 * **Modern Interface**: From the mobile app to the landing page, we've designed a user-friendly and visually engaging experience.
 
+## 🔗 Production Links
+
+* **🌐 Landing Page**: [**Kunjungi Situs Web Kami**](https://greenspace.hacktowin.com)
+* **📱 Download APK**: [**Unduh Aplikasi Android**](https://expo.dev/artifacts/eas/nvq4YYjVSVinucW1F5bVxt.apk)
+* **⚙️ API Endpoint**: `https://api.hacktowin.com`
+
+
 ## 🛠️ Technology Stack
 
 The GreenSpace platform is built using modern, cutting-edge technologies at every layer.
@@ -20,8 +27,6 @@ The GreenSpace platform is built using modern, cutting-edge technologies at ever
 | ⚙️ **API Server** | `Express.js`          | A reliable backend to handle requests, authentication, and business logic.                              |
 | ⛓️ **Web3 Backend** | `Motoko (ICP)`        | *Canisters* (smart contracts) on the Internet Computer to manage report data, users, and GSP tokens decentrally. |
 
-![image_712222.jpg](image_712222.jpg)
-
 ## 🤖 AI & Data for Disaster Prediction
 
 We integrate several AI and data services to provide accurate and rapid predictions:
@@ -32,7 +37,41 @@ We integrate several AI and data services to provide accurate and rapid predicti
 
 ## 🚀 Getting Started
 
-Instructions for running this project locally will be added here.
+### Prerequisites
+
+Make sure you have the following installed:
+* [Node.js](https://nodejs.org/)
+* [Git](https://git-scm.com/)
+* [DFINITY Canister SDK](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/)
+
+### Installation & Running Locally
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/your-username/greenspace.git](https://github.com/your-username/greenspace.git)
+    cd greenspace
+    npm i
+    ```
+
+2.  **Deploy Canisters (Motoko):**
+    ```bash
+    dfx start --background
+    dfx generate
+    dfx deploy
+    ```
+    
+3. **Run The Landing Page & API**
+     ```bash
+    npm run dev
+    ```
+
+4.  **Run the Mobile App (React Native Expo):**
+    ```bash
+    cd mobile
+    npm install
+    npx expo start/npm run android
+    ```
 
 ---
+
 *Created with a passion for a greener and safer Earth.*
